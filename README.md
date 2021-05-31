@@ -1,4 +1,4 @@
-# oreluniver-api
+# Oreluniver API
 Неофициальный API ОГУ им. И.С. Тургенева
 
 [Swagger](https://siper.github.io/oreluniver-api/)
