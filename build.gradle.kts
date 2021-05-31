@@ -5,7 +5,7 @@ val ktorFlywayVersion = "1.2.2"
 val logbackVersion = "1.2.3"
 val assertjVersion = "3.19.0"
 val restAssuredVersion = "4.3.3"
-val junitVersion = "5.7.1"
+val junitVersion = "5.7.2"
 val postgresqlVersion = "42.2.2"
 
 plugins {
