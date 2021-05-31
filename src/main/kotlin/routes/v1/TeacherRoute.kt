@@ -5,14 +5,17 @@ import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import model.EntityNotFoundException
-import service.GroupService
+import service.ScheduleService
 import service.TeacherService
 import util.Pagination
-import java.lang.IllegalArgumentException
 
-fun Route.teacher(teacherService: TeacherService) {
+fun Route.teacher(
+    teacherService: TeacherService,
+    scheduleService: ScheduleService
+) {
 
     route("/teacher") {
+
         get("/{id}") {
             val id = call.parameters["id"]?.toIntOrNull() ?: throw IllegalArgumentException("Не верный id")
             val group = teacherService.getTeacher(id) ?: throw EntityNotFoundException()
@@ -36,6 +39,17 @@ fun Route.teacher(teacherService: TeacherService) {
                 call.response.headers.append(it.name, it.value)
             }
             call.respond(HttpStatusCode.OK, teachers.data)
+        }
+
+        route("schedule") {
+
+            get("/{teacher_id}") {
+                val id = call.parameters["teacher_id"]?.toIntOrNull() ?: throw IllegalArgumentException("Не верный id")
+                val year = call.parameters["year"]?.toIntOrNull() ?: throw IllegalArgumentException("Не верный year")
+                val week = call.parameters["week"]?.toIntOrNull() ?: throw IllegalArgumentException("Не верный week")
+
+                call.respond(HttpStatusCode.OK, scheduleService.getTeacherSchedule(id, year, week))
+            }
         }
     }
 }

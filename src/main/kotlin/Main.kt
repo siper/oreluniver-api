@@ -1,4 +1,7 @@
+import entity.ApiError
 import io.ktor.application.*
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
 import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.response.*
@@ -6,18 +9,13 @@ import io.ktor.routing.*
 import io.ktor.serialization.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import model.EntityNotFoundException
-import entity.ApiError
 import kotlinx.serialization.json.Json
+import model.EntityNotFoundException
 import org.jetbrains.exposed.sql.Database
 import routes.v1.classroom
-import service.DatabaseFactory
-import service.GroupService
 import routes.v1.group
 import routes.v1.teacher
-import service.ClassroomService
-import service.TeacherService
-import java.lang.IllegalArgumentException
+import service.*
 
 fun Application.module() {
     install(DefaultHeaders)
@@ -45,13 +43,14 @@ fun Application.module() {
     val groupService = GroupService()
     val teacherService = TeacherService()
     val classroomService = ClassroomService()
+    val scheduleService = ScheduleService(HttpClient(CIO), groupService, classroomService, teacherService)
 
     install(Routing) {
         route("/api") {
             route("/v1") {
-                group(groupService)
-                teacher(teacherService)
-                classroom(classroomService)
+                group(groupService, scheduleService)
+                teacher(teacherService, scheduleService)
+                classroom(classroomService, scheduleService)
             }
         }
     }

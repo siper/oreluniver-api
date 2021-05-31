@@ -6,12 +6,16 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import model.EntityNotFoundException
 import service.GroupService
+import service.ScheduleService
 import util.Pagination
-import java.lang.IllegalArgumentException
 
-fun Route.group(groupService: GroupService) {
+fun Route.group(
+    groupService: GroupService,
+    scheduleService: ScheduleService
+) {
 
     route("/group") {
+
         get("/{id}") {
             val id = call.parameters["id"]?.toIntOrNull() ?: throw IllegalArgumentException("Не верный id")
             val group = groupService.getGroup(id) ?: throw EntityNotFoundException()
@@ -35,6 +39,17 @@ fun Route.group(groupService: GroupService) {
                 call.response.headers.append(it.name, it.value)
             }
             call.respond(HttpStatusCode.OK, groups.data)
+        }
+
+        route("schedule") {
+
+            get("/{group_id}") {
+                val id = call.parameters["group_id"]?.toIntOrNull() ?: throw IllegalArgumentException("Не верный id")
+                val year = call.parameters["year"]?.toIntOrNull() ?: throw IllegalArgumentException("Не верный year")
+                val week = call.parameters["week"]?.toIntOrNull() ?: throw IllegalArgumentException("Не верный week")
+
+                call.respond(HttpStatusCode.OK, scheduleService.getGroupSchedule(id, year, week))
+            }
         }
     }
 }

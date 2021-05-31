@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.cli.js.loadPluginsForTests
-
 val ktorVersion = "1.6.0"
 val exposedVersion = "0.31.1"
 val hikariCpVersion = "4.0.3"
@@ -27,6 +25,7 @@ dependencies {
 
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-serialization:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
 
     implementation("org.postgresql:postgresql:$postgresqlVersion")
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")

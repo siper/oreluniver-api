@@ -1,7 +1,9 @@
 package service
 
 import entity.PagedResult
-import model.*
+import model.Buildings
+import model.Classroom
+import model.Classrooms
 import org.jetbrains.exposed.sql.*
 import service.DatabaseFactory.dbQuery
 import util.Pagination
@@ -43,6 +45,13 @@ class ClassroomService {
     suspend fun getClassroom(id: Int): Classroom? = dbQuery {
         Buildings.innerJoin(Classrooms, { Buildings.id }, { buildingId })
             .select { (Classrooms.id eq id) }
+            .mapNotNull { Classroom.fromRow(it) }
+            .singleOrNull()
+    }
+
+    suspend fun getClassroom(buildingId: Int, title: String): Classroom? = dbQuery {
+        Buildings.innerJoin(Classrooms, { id }, { Classrooms.buildingId })
+            .select { (Classrooms.buildingId eq buildingId) and (Classrooms.title eq title) }
             .mapNotNull { Classroom.fromRow(it) }
             .singleOrNull()
     }
