@@ -14,6 +14,11 @@ plugins {
     application
 }
 
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+}
+
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
 
