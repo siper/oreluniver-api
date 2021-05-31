@@ -47,7 +47,7 @@ application {
 
 tasks {
     named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
-        archiveBaseName.set("shadow")
+        archiveBaseName.set("oreluniver-api")
         project.setProperty("mainClassName", "MainKt")
         mergeServiceFiles()
         manifest {

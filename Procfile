@@ -1,1 +1,1 @@
-web: java -jar build/libs/oreluniver-api.jar
+web: java -jar build/libs/oreluniver-api-all.jar
