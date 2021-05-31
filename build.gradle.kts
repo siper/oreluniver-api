@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.cli.js.loadPluginsForTests
+
 val ktorVersion = "1.6.0"
 val exposedVersion = "0.31.1"
 val hikariCpVersion = "4.0.3"
@@ -11,6 +13,7 @@ val postgresqlVersion = "42.2.2"
 plugins {
     kotlin("jvm") version "1.5.10"
     kotlin("plugin.serialization") version "1.5.10"
+    id("com.github.johnrengelman.shadow") version "6.1.0"
     application
 }
 
@@ -40,6 +43,17 @@ dependencies {
 
 application {
     mainClass.set("MainKt")
+}
+
+tasks {
+    named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
+        archiveBaseName.set("shadow")
+        project.setProperty("mainClassName", "MainKt")
+        mergeServiceFiles()
+        manifest {
+            attributes(mapOf("Main-Class" to "MainKt"))
+        }
+    }
 }
 
 tasks.withType<Test> {

@@ -25,7 +25,7 @@ data class Teacher(
 ) {
     companion object {
         fun fromRow(row: ResultRow): Teacher {
-            return return Teacher(
+            return Teacher(
                 id = row[Teachers.id],
                 name = row[Teachers.name],
                 surname = row[Teachers.surname],
