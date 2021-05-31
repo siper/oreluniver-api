@@ -56,6 +56,10 @@ tasks {
     }
 }
 
+tasks.create("stage") {
+    dependsOn("shadowJar")
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }
