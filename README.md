@@ -1,7 +1,8 @@
-# Oreluniver API
-Неофициальный API ОГУ им. И.С. Тургенева
+# Oreluniver API 
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+[![View in Swagger](http://jessemillar.github.io/view-in-swagger-button/button.svg)](https://siper.github.io/oreluniver-api/)
 
-[Swagger](https://siper.github.io/oreluniver-api/)
+Неофициальный API ОГУ им. И.С. Тургенева
 
 ## Отличия от оригинала
 * Четкая структура, выделены три роута ```teacher```, ```group```, ```classroom``` для преподавателей, групп (студентов) и аудиторий соответсвенно
