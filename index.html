@@ -1,12 +1,12 @@
 <!-- HTML for static distribution bundle build -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <title>Swagger UI</title>
-    <link href="dist/swagger-ui.css" rel="stylesheet" type="text/css"/>
-    <link href="dist/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
-    <link href="dist/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+    <link rel="stylesheet" type="text/css" href="dist/swagger-ui.css" />
+    <link rel="icon" type="image/png" href="dist/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="dist/favicon-16x16.png" sizes="16x16" />
     <style>
       html
       {
@@ -27,17 +27,15 @@
         margin:0;
         background: #fafafa;
       }
-
-
     </style>
-</head>
+  </head>
 
-<body>
-<div id="swagger-ui"></div>
+  <body>
+    <div id="swagger-ui"></div>
 
-<script charset="UTF-8" src="dist/swagger-ui-bundle.js"></script>
-<script charset="UTF-8" src="dist/swagger-ui-standalone-preset.js"></script>
-<script>
+    <script src="dist/swagger-ui-bundle.js" charset="UTF-8"> </script>
+    <script src="dist/swagger-ui-standalone-preset.js" charset="UTF-8"> </script>
+    <script>
     window.onload = function() {
       // Begin Swagger UI call region
       const ui = SwaggerUIBundle({
@@ -57,8 +55,6 @@
 
       window.ui = ui;
     };
-
-
-</script>
-</body>
+  </script>
+  </body>
 </html>
