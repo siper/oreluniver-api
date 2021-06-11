@@ -6,7 +6,7 @@ val logbackVersion = "1.2.3"
 val assertjVersion = "3.19.0"
 val restAssuredVersion = "4.4.0"
 val junitVersion = "5.7.2"
-val postgresqlVersion = "42.2.20"
+val postgresqlVersion = "42.2.21"
 
 plugins {
     kotlin("jvm") version "1.5.10"
