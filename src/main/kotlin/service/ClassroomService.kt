@@ -12,7 +12,8 @@ class ClassroomService {
 
     suspend fun getAllClassrooms(page: Int, limit: Int): PagedResult<Classroom> = dbQuery {
         val sqlQuery = Buildings.innerJoin(Classrooms, { id }, { buildingId })
-        val totalCount = sqlQuery.selectAll()
+        val totalCount = sqlQuery
+            .selectAll()
             .count()
         val data = sqlQuery.selectAll()
             .limit(limit, offset = Pagination.getOffset(page, limit).toLong())
@@ -26,7 +27,8 @@ class ClassroomService {
     }
 
     suspend fun searchClassrooms(query: String, page: Int, limit: Int): PagedResult<Classroom> = dbQuery {
-        val sqlQuery = Buildings.innerJoin(Classrooms, { id }, { buildingId })
+        val sqlQuery = Buildings
+            .innerJoin(Classrooms, { id }, { buildingId })
             .select {
                 (Classrooms.title.lowerCase() like "%$query%")
             }
@@ -43,14 +45,16 @@ class ClassroomService {
     }
 
     suspend fun getClassroom(id: Int): Classroom? = dbQuery {
-        Buildings.innerJoin(Classrooms, { Buildings.id }, { buildingId })
+        Buildings
+            .innerJoin(Classrooms, { Buildings.id }, { buildingId })
             .select { (Classrooms.id eq id) }
             .mapNotNull { Classroom.fromRow(it) }
             .singleOrNull()
     }
 
     suspend fun getClassroom(buildingId: Int, title: String): Classroom? = dbQuery {
-        Buildings.innerJoin(Classrooms, { id }, { Classrooms.buildingId })
+        Buildings
+            .innerJoin(Classrooms, { id }, { Classrooms.buildingId })
             .select { (Classrooms.buildingId eq buildingId) and (Classrooms.title eq title) }
             .mapNotNull { Classroom.fromRow(it) }
             .singleOrNull()

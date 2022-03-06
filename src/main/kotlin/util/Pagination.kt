@@ -23,8 +23,8 @@ object Pagination {
     fun createResponseHeaders(result: PagedResult<*>): List<PaginationHeader> {
         return listOf(
             PaginationHeader("page", result.page.toString()),
-            PaginationHeader("page_size", result.pageSize.toString()),
-            PaginationHeader("page_count", result.pageCount.toString()),
+            PaginationHeader("pageSize", result.pageSize.toString()),
+            PaginationHeader("pageCount", result.pageCount.toString()),
         )
     }
 
@@ -36,10 +36,10 @@ object Pagination {
 
     fun checkPageSize(pageSize: Int) {
         if (pageSize < 1) {
-            throw IllegalArgumentException("page_size не может быть меньше 1")
+            throw IllegalArgumentException("pageSize не может быть меньше 1")
         }
         if (pageSize > 30) {
-            throw IllegalArgumentException("page_size не может быть больше 30")
+            throw IllegalArgumentException("pageSize не может быть больше 30")
         }
     }
 }

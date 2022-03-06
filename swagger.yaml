@@ -324,8 +324,14 @@ definitions:
         type: "string"
       endDate:
         type: "string"
-      group:
-        $ref: '#/definitions/Group'
+      link:
+        type: "string"
+      password:
+        type: "string"
+      groups:
+        type: "array"
+          items:
+            $ref: '#/definitions/Group'
       classroom:
         $ref: '#/definitions/Classroom'
       teacher:

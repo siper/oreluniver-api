@@ -33,6 +33,7 @@ fun Application.module() {
         json(
             Json {
                 prettyPrint = true
+                ignoreUnknownKeys = true
             }
         )
     }

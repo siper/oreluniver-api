@@ -5,13 +5,9 @@ import io.ktor.client.request.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.*
 import model.*
-import util.ScheduleUtils
-import util.TimedCache
+import util.*
 import java.time.format.DateTimeFormatter
 
 class ScheduleService(
@@ -25,69 +21,84 @@ class ScheduleService(
     private val classroomCache = TimedCache<ClassroomId, Classroom>(12 * 60 * 60 * 1000)
 
     suspend fun getGroupSchedule(id: Int, year: Int, week: Int): List<Schedule> = withContext(Dispatchers.IO) {
-        val timestamp = ScheduleUtils.getScheduleTime(year, week)
+        val timestamp = getScheduleTime(year, week)
         val schedule = client.get<String>("http://oreluniver.ru/schedule//$id///$timestamp/printschedule")
         return@withContext formatSchedule(schedule, year, week)
     }
 
     suspend fun getTeacherSchedule(id: Int, year: Int, week: Int): List<Schedule> = withContext(Dispatchers.IO) {
-        val timestamp = ScheduleUtils.getScheduleTime(year, week)
+        val timestamp = getScheduleTime(year, week)
         val schedule = client.get<String>("http://oreluniver.ru/schedule/$id////$timestamp/printschedule")
         return@withContext formatSchedule(schedule, year, week)
     }
 
     suspend fun getClassroomSchedule(id: Int, year: Int, week: Int): List<Schedule> = withContext(Dispatchers.IO) {
-        val timestamp = ScheduleUtils.getScheduleTime(year, week)
+        val timestamp = getScheduleTime(year, week)
         val classroom =
             classroomService.getClassroom(id) ?: throw NullPointerException("Classroom with id $id not exists in db")
-        val schedule =
-            client.get<String>("http://oreluniver.ru/schedule///${classroom.building.id}/${classroom.title}/$timestamp/printschedule")
+        val schedule = client.get<String>(
+            "http://oreluniver.ru/schedule///${classroom.building.id}/${classroom.title}/$timestamp/printschedule"
+        )
         return@withContext formatSchedule(schedule, year, week)
     }
 
-    private suspend fun formatSchedule(raw: String, year: Int, week: Int): List<Schedule> =
-        withContext(Dispatchers.IO) {
-            val json = Json.parseToJsonElement(raw)
-            return@withContext if (json is JsonObject) {
-                (0..1000).mapNotNull {
-                    json.jsonObject["$it"]?.run {
-                        getScheduleItem(jsonObject.toString(), year, week)
-                    }
-                }
-            } else {
-                json.jsonArray.map {
-                    getScheduleItem(it.jsonObject.toString(), year, week)
-                }
+    private suspend fun formatSchedule(
+        raw: String,
+        year: Int,
+        week: Int
+    ): List<Schedule> = withContext(Dispatchers.IO) {
+        val json = Json.parseToJsonElement(raw)
+        return@withContext if (json is JsonObject) {
+            val items = mutableListOf<Schedule>()
+            for (i in 0..1000) {
+                val jsonObject = json.jsonObject["$i"] ?: break
+                items.add(getScheduleItem(jsonObject.toString(), year, week))
+            }
+            return@withContext items
+        } else {
+            json.jsonArray.map {
+                getScheduleItem(it.jsonObject.toString(), year, week)
             }
         }
+    }
+
+    private suspend fun getGroup(id: Int): Group {
+        return groupCache[id] ?: groupService.getGroup(id)?.also { group ->
+            groupCache[id] = group
+        } ?: throw NullPointerException("Group with id $id not exists in db")
+    }
+
+    private suspend fun getTeacher(id: Int): Teacher {
+        return teacherCache[id] ?: teacherService.getTeacher(id)?.also { teacher ->
+            teacherCache[id] = teacher
+        } ?: throw NullPointerException("Teacher with id $id not exists in db")
+    }
+
+    private suspend fun getClassroom(id: ClassroomId): Classroom {
+        return classroomCache[id] ?: classroomService.getClassroom(id.buildingId, id.classroomTitle)
+            ?.also { classroom ->
+                classroomCache[id] = classroom
+            }
+        ?: throw NullPointerException("Classroom with building_id ${id.buildingId} and title ${id.classroomTitle} not exists in db")
+    }
 
     private suspend fun getScheduleItem(raw: String, year: Int, week: Int): Schedule {
-        val legacySchedule = Json.decodeFromString<LegacySchedule>(raw)
+        val legacySchedule = decodeSchedule(raw)
 
-        val group = groupCache[legacySchedule.idGruop] ?: groupService.getGroup(legacySchedule.idGruop)?.also { group ->
-            groupCache[legacySchedule.idGruop] = group
-        } ?: throw NullPointerException("Group with id ${legacySchedule.idGruop} not exists in db")
+        val groups = legacySchedule.idGruops.map { id ->
+            getGroup(id)
+        }
 
-        val teacher = teacherCache[legacySchedule.employee_id] ?: teacherService.getTeacher(legacySchedule.employee_id)
-            ?.also { teacher ->
-                teacherCache[legacySchedule.employee_id] = teacher
-            } ?: throw NullPointerException("Teacher with id ${legacySchedule.employee_id} not exists in db")
+        val teacher = getTeacher(legacySchedule.employeeId)
 
         val classroomId = ClassroomId(legacySchedule.korpus, legacySchedule.numberRoom)
-        val classroom = classroomCache[classroomId] ?: classroomService.getClassroom(
-            legacySchedule.korpus,
-            legacySchedule.numberRoom
-        )?.also { classroom ->
-            classroomCache[classroomId] = classroom
-        }
-        ?: throw NullPointerException("Classroom with building_id ${classroomId.buildingId} and title ${classroomId.classroomTitle} not exists in db")
+        val classroom = getClassroom(classroomId)
 
-        val startDate =
-            ScheduleUtils.getStartDate(legacySchedule.dayWeek, legacySchedule.numberLesson, year, week).run {
-                this.format(DateTimeFormatter.ISO_DATE_TIME)
-            }
-        val endDate = ScheduleUtils.getEndDate(legacySchedule.dayWeek, legacySchedule.numberLesson, year, week).run {
-            this.format(DateTimeFormatter.ISO_DATE_TIME)
+        val startDate = legacySchedule.getStartDate(year, week).run {
+            format(DateTimeFormatter.ISO_DATE_TIME)
+        }
+        val endDate = legacySchedule.getEndDate(year, week).run {
+            format(DateTimeFormatter.ISO_DATE_TIME)
         }
 
         return Schedule(
@@ -97,10 +108,60 @@ class ScheduleService(
             subgroupNumber = legacySchedule.numberSubGruop,
             startDate = startDate,
             endDate = endDate,
-            group = group,
+            link = legacySchedule.zoomLink ?: legacySchedule.link,
+            password = legacySchedule.zoomPassword ?: legacySchedule.pass,
+            groups = groups,
             classroom = classroom,
             teacher = teacher
         )
+    }
+
+    private fun decodeSchedule(raw: String): LegacySchedule {
+        val jsonObject = Json.parseToJsonElement(raw).jsonObject
+
+        val idGroupJson = jsonObject["idGruop"]?.jsonPrimitive
+        val idGroupIds = idGroupJson?.parseGroupIds() ?: error("Empty idGroup list $idGroupJson")
+
+        return LegacySchedule(
+            idGruops = idGroupIds,
+            numberSubGruop = jsonObject.require("NumberSubGruop"),
+            titleSubject = jsonObject.require("TitleSubject"),
+            typeLesson = jsonObject.require("TypeLesson"),
+            kurs = jsonObject.require("kurs"),
+            numberLesson = jsonObject.require("NumberLesson"),
+            dayWeek = jsonObject.require("DayWeek"),
+            dateLesson = jsonObject.require("DateLesson"),
+            korpus = jsonObject.require("Korpus"),
+            numberRoom = jsonObject.require("NumberRoom"),
+            special = jsonObject.require("special"),
+            title = jsonObject.require("title"),
+            employeeId = jsonObject.require("employee_id"),
+            family = jsonObject.require("Family"),
+            name = jsonObject.require("Name"),
+            secondName = jsonObject.require("SecondName"),
+            link = jsonObject
+                .require<String>("link")
+                .trim()
+                .takeIf { it.isNotEmpty() },
+            pass = jsonObject
+                .require<String>("pass")
+                .trim()
+                .takeIf { it.isNotEmpty() },
+            zoomLink = jsonObject
+                .require<String>("zoom_link")
+                .trim()
+                .takeIf { it.isNotEmpty() },
+            zoomPassword = jsonObject
+                .require<String>("zoom_password")
+                .trim()
+                .takeIf { it.isNotEmpty() }
+        )
+    }
+
+    private fun JsonPrimitive.parseGroupIds(): List<Int> {
+        return intOrNull?.let { listOf(it) } ?: content
+            .split(", ")
+            .map { it.toInt() }
     }
 
     data class ClassroomId(val buildingId: Int, val classroomTitle: String)

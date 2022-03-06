@@ -10,7 +10,9 @@ data class Schedule(
     val subgroupNumber: Int,
     val startDate: String,
     val endDate: String,
-    val group: Group,
+    val link: String?,
+    val password: String?,
+    val groups: List<Group>,
     val classroom: Classroom,
     val teacher: Teacher
 )
