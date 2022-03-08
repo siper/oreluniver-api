@@ -330,8 +330,8 @@ definitions:
         type: "string"
       groups:
         type: "array"
-          items:
-            $ref: '#/definitions/Group'
+        items:
+          $ref: '#/definitions/Group'
       classroom:
         $ref: '#/definitions/Classroom'
       teacher:
