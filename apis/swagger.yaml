@@ -1,0 +1,414 @@
+swagger: "2.0"
+info:
+  description: "Неофициальный API ОГУ им. И.С. Тургенева"
+  version: "1.0.0"
+  title: "Oreluniver API"
+  contact:
+    email: "siper13@gmail.com"
+  license:
+    name: "MIT"
+    url: "https://raw.githubusercontent.com/git/git-scm.com/main/MIT-LICENSE.txt"
+host: "oreluniver-api.herokuapp.com"
+basePath: "/api/v1"
+tags:
+  - name: "teacher"
+    description: "Поиск и расписание для преподавателей"
+  - name: "group"
+    description: "Поиск и расписание для групп (студентов)"
+  - name: "classroom"
+    description: "Поиск и расписание для аудиторий"
+schemes:
+  - "https"
+paths:
+  /teacher/{id}:
+    get:
+      tags:
+        - "teacher"
+      summary: "Получение преподавателя по id"
+      operationId: "getTeacher"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "id"
+          type: "integer"
+          in: "path"
+          description: "id преподавателя"
+          required: true
+      responses:
+        "200":
+          description: "Успешный запрос"
+          schema:
+            $ref: "#/definitions/Teacher"
+        "400":
+          description: "Не верный id"
+        "404":
+          description: "Сущность с данным id не найдена"
+  /teacher/search:
+    get:
+      tags:
+        - "teacher"
+      summary: "Поиск преподавателя"
+      description: "Поиск преподавателя по имени фамилии или отчеству"
+      operationId: "searchTeacher"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "q"
+          in: "query"
+          description: "Текст запроса для поиска"
+          required: true
+          type: "string"
+        - name: "page"
+          in: "query"
+          description: "Номер страницы"
+          type: "integer"
+        - name: "page_size"
+          in: "query"
+          description: "Кол-во элементов на странице"
+          type: "integer"
+          default: 10.0
+          minimum: 1.0
+          maximum: 30.0
+      responses:
+        "200":
+          description: "Успешный запрос"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Teacher"
+        "400":
+          description: "Не верные параметры"
+  /teacher/schedule/{id}:
+    get:
+      tags:
+        - "teacher"
+      summary: "Получение расписания для преподавателя"
+      description: "Получение расписания по номеру недели и году"
+      operationId: "teacher_schedule"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "id преподавателя"
+          required: true
+          type: "integer"
+        - name: "week"
+          in: "query"
+          description: "Номер недели в году"
+          required: true
+          type: "integer"
+          minimum: 0.0
+          maximum: 52.0
+        - name: "year"
+          in: "query"
+          description: "Год"
+          required: true
+          type: "integer"
+      responses:
+        "200":
+          description: "Успешный запрос"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Schedule"
+        "400":
+          description: "Не верные параметры"
+  /group/{id}:
+    get:
+      tags:
+        - "group"
+      summary: "Получение группы по id"
+      operationId: "getGroup"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "id"
+          type: "integer"
+          in: "path"
+          description: "id группы"
+          required: true
+      responses:
+        "200":
+          description: "Успешный запрос"
+          schema:
+            $ref: "#/definitions/Group"
+        "400":
+          description: "Не верный id"
+        "404":
+          description: "Сущность с данным id не найдена"
+  /group/search:
+    get:
+      tags:
+        - "group"
+      summary: "Поиск группы"
+      description: "Поиск группы по названию или коду"
+      operationId: "searchGroup"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "q"
+          in: "query"
+          description: "Текст запроса для поиска"
+          required: true
+          type: "string"
+        - name: "page"
+          in: "query"
+          description: "Номер страницы"
+          type: "integer"
+        - name: "page_size"
+          in: "query"
+          description: "Кол-во элементов на странице"
+          type: "integer"
+          default: 10.0
+          minimum: 1.0
+          maximum: 30.0
+      responses:
+        "200":
+          description: "Успешный запрос"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Group"
+        "400":
+          description: "Не верные параметры"
+  /group/schedule/{id}:
+    get:
+      tags:
+        - "group"
+      summary: "Получение расписания для группы"
+      description: "Получение расписания по номеру недели и году"
+      operationId: "scheduleGroup"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "id группы"
+          required: true
+          type: "integer"
+        - name: "week"
+          in: "query"
+          description: "Номер недели в году"
+          required: true
+          type: "integer"
+          minimum: 0.0
+          maximum: 52.0
+        - name: "year"
+          in: "query"
+          description: "Год"
+          required: true
+          type: "integer"
+      responses:
+        "200":
+          description: "Успешный запрос"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Group"
+        "400":
+          description: "Не верные параметры"
+  /classroom/{id}:
+    get:
+      tags:
+        - "classroom"
+      summary: "Получение аудитории по id"
+      operationId: "getClassroom"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "id"
+          type: "integer"
+          in: "path"
+          description: "id аудитории"
+          required: true
+      responses:
+        "200":
+          description: "Успешный запрос"
+          schema:
+            $ref: "#/definitions/Classroom"
+        "400":
+          description: "Не верный id"
+        "404":
+          description: "Сущность с данным id не найдена"
+  /classroom/search:
+    get:
+      tags:
+        - "classroom"
+      summary: "Поиск аудитории"
+      description: "Поиск аудитории по названию"
+      operationId: "searchClassroom"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "q"
+          in: "query"
+          description: "Текст запроса для поиска"
+          required: true
+          type: "string"
+        - name: "page"
+          in: "query"
+          description: "Номер страницы"
+          type: "integer"
+        - name: "page_size"
+          in: "query"
+          description: "Кол-во элементов на странице"
+          type: "integer"
+          default: 10.0
+          minimum: 1.0
+          maximum: 30.0
+      responses:
+        "200":
+          description: "Успешный запрос"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Classroom"
+        "400":
+          description: "Не верные параметры"
+  /classroom/schedule/{id}:
+    get:
+      tags:
+        - "classroom"
+      summary: "Получение расписания для аудитории"
+      description: "Получение расписания по номеру недели и году"
+      operationId: "scheduleClassroom"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "id аудитории"
+          required: true
+          type: "integer"
+        - name: "week"
+          in: "query"
+          description: "Номер недели в году"
+          required: true
+          type: "integer"
+          minimum: 0.0
+          maximum: 52.0
+        - name: "year"
+          in: "query"
+          description: "Год"
+          required: true
+          type: "integer"
+      responses:
+        "200":
+          description: "Успешный запрос"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Classroom"
+        "400":
+          description: "Не верные параметры"
+definitions:
+  Schedule:
+    type: "object"
+    properties:
+      title:
+        type: "string"
+      special:
+        type: "string"
+      lessonType:
+        type: "string"
+      subgroupNumber:
+        type: "integer"
+      startDate:
+        type: "string"
+      endDate:
+        type: "string"
+      link:
+        type: "string"
+      password:
+        type: "string"
+      groups:
+        type: "array"
+        items:
+          $ref: '#/definitions/Group'
+      classroom:
+        $ref: '#/definitions/Classroom'
+      teacher:
+        $ref: '#/definitions/Teacher'
+  Group:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      title:
+        type: "string"
+      course:
+        type: "integer"
+      code:
+        type: "string"
+      educationLevel:
+        type: "string"
+      institute:
+        $ref: '#/definitions/Institute'
+  Teacher:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      name:
+        type: "string"
+      surname:
+        type: "string"
+      patronymic:
+        type: "string"
+      photo:
+        type: "string"
+      chair:
+        $ref: '#/definitions/Chair'
+  Chair:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      title:
+        type: "string"
+      shortTitle:
+        type: "string"
+      institute:
+        $ref: '#/definitions/Institute'
+  Classroom:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      title:
+        type: "string"
+      building:
+        $ref: '#/definitions/Building'
+  Building:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      title:
+        type: "string"
+      address:
+        type: "string"
+      latitude:
+        type: "number"
+        format: "float"
+      longitude:
+        type: "number"
+        format: "float"
+      img:
+        type: "string"
+  Institute:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      title:
+        type: "string"
+      shortTitle:
+        type: "string"

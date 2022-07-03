@@ -1,6 +1,0 @@
-{
-  "name": "Oreluniver API",
-  "description": "Неофициальный API для получения данных сайта ОГУ им. И.С. Тургенева",
-  "image": "heroku/java",
-  "addons": [ "heroku-postgresql" ]
-}
