@@ -1,9 +1,9 @@
 package routes.v1
 
-import io.ktor.application.*
 import io.ktor.http.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.server.application.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import model.EntityNotFoundException
 import service.GroupService
 import service.ScheduleService

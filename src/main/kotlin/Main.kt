@@ -1,14 +1,19 @@
 import entity.ApiError
-import io.ktor.application.*
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
-import io.ktor.features.*
+import io.ktor.client.plugins.*
+import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.response.*
-import io.ktor.routing.*
-import io.ktor.serialization.*
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.defaultheaders.*
+import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 import model.EntityNotFoundException
 import org.jetbrains.exposed.sql.Database
@@ -21,11 +26,11 @@ fun Application.module() {
     install(DefaultHeaders)
     install(CallLogging)
     install(StatusPages) {
-        exception<IllegalArgumentException> { cause ->
+        exception<IllegalArgumentException> { call, cause ->
             call.respond(HttpStatusCode.BadRequest, ApiError(cause.message ?: "Неизвестная ошибка параметров"))
         }
-        exception<EntityNotFoundException> {
-            call.respond(HttpStatusCode.NotFound, ApiError(it.message.toString()))
+        exception<EntityNotFoundException> { call, cause ->
+            call.respond(HttpStatusCode.NotFound, ApiError(cause.message.toString()))
         }
     }
 
@@ -44,7 +49,10 @@ fun Application.module() {
     val groupService = GroupService()
     val teacherService = TeacherService()
     val classroomService = ClassroomService()
-    val scheduleService = ScheduleService(HttpClient(CIO), groupService, classroomService, teacherService)
+    val ddosProtectionHackService = DdosProtectionHackService()
+    val client = HttpClient(CIO)
+    setupClient(client, ddosProtectionHackService)
+    val scheduleService = ScheduleService(client, groupService, classroomService, teacherService)
 
     install(Routing) {
         route("/api") {
@@ -56,6 +64,22 @@ fun Application.module() {
         }
     }
 
+}
+
+private fun setupClient(client: HttpClient, ddosProtectionHackService: DdosProtectionHackService) {
+    client.plugin(HttpSend).intercept { request ->
+        return@intercept execute(
+            request.apply {
+                header(
+                    "User-Agent",
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.136 Safari/537.36"
+                )
+            }
+        )
+    }
+    client.plugin(HttpSend).intercept { request ->
+        return@intercept execute(ddosProtectionHackService.handleDdosProtection(request, this))
+    }
 }
 
 fun main(args: Array<String>) {

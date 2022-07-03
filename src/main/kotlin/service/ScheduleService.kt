@@ -2,9 +2,9 @@ package service
 
 import io.ktor.client.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
 import model.*
 import util.*
@@ -22,23 +22,22 @@ class ScheduleService(
 
     suspend fun getGroupSchedule(id: Int, year: Int, week: Int): List<Schedule> = withContext(Dispatchers.IO) {
         val timestamp = getScheduleTime(year, week)
-        val schedule = client.get<String>("http://oreluniver.ru/schedule//$id///$timestamp/printschedule")
+        val schedule = client.get("https://oreluniver.ru/schedule//$id///$timestamp/printschedule").bodyAsText()
         return@withContext formatSchedule(schedule, year, week)
     }
 
     suspend fun getTeacherSchedule(id: Int, year: Int, week: Int): List<Schedule> = withContext(Dispatchers.IO) {
         val timestamp = getScheduleTime(year, week)
-        val schedule = client.get<String>("http://oreluniver.ru/schedule/$id////$timestamp/printschedule")
+        val schedule = client.get("https://oreluniver.ru/schedule/$id////$timestamp/printschedule").bodyAsText()
         return@withContext formatSchedule(schedule, year, week)
     }
 
     suspend fun getClassroomSchedule(id: Int, year: Int, week: Int): List<Schedule> = withContext(Dispatchers.IO) {
         val timestamp = getScheduleTime(year, week)
-        val classroom =
-            classroomService.getClassroom(id) ?: throw NullPointerException("Classroom with id $id not exists in db")
-        val schedule = client.get<String>(
-            "http://oreluniver.ru/schedule///${classroom.building.id}/${classroom.title}/$timestamp/printschedule"
-        )
+        val classroom = requireNotNull(classroomService.getClassroom(id)) { "Classroom with id $id not exists in db" }
+        val schedule = client.get(
+            "https://oreluniver.ru/schedule///${classroom.building.id}/${classroom.title}/$timestamp/printschedule"
+        ).bodyAsText()
         return@withContext formatSchedule(schedule, year, week)
     }
 
