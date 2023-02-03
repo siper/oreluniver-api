@@ -9,7 +9,7 @@ val junitVersion = "5.9.2"
 val postgresqlVersion = "42.5.2"
 
 plugins {
-    kotlin("jvm") version "1.8.0"
+    kotlin("jvm") version "1.8.10"
     kotlin("plugin.serialization") version "1.8.10"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     application
